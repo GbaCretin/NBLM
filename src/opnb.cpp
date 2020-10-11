@@ -9,14 +9,15 @@ INT32 CHIP_SAMPLE_RATE;
 namespace chip
 {
     int8_t chipCount;
-    const size_t SAMPLE_BUFFER_SIZE = 0x100000;
-
-    OPNB::OPNB()
+    const size_t INTERNAL_BUFFER_SIZE = 0x80000;
+    const size_t RESAMPLER_MAX_DURATION = 0x8000;
+    OPNB::OPNB(int rate)
     {
         int chipClock = 3993600 * 2;
         uint8_t AYDisable = 0;	// Enable
 
         _chipID = chipCount;
+        _destRate = rate;
 
         ym2610_set_ay_emu_core(0);
         _internalRate[CHKIND_FMADPCM] =
@@ -29,12 +30,15 @@ namespace chip
         std::cout << "FM/ADPCM internal rate: " << _internalRate[CHKIND_FMADPCM] << std::endl;
         std::cout << "SSG internal rate: " << _internalRate[CHKIND_SSG] << std::endl;
 
-        for (int i = 0; i <= 1; ++i)
+        for (int snd = 0; snd <= 1; ++snd)
         {
             for (int pan = 0; pan <= 1; ++pan)
             {
-                _buffer[i][pan] = new stream_sample_t[SAMPLE_BUFFER_SIZE];
+                _internalBuffers[snd][pan] = new stream_sample_t[INTERNAL_BUFFER_SIZE];
             }
+
+            _resamplers[snd] = LinearResampler();
+            _resamplers[snd].init(_internalRate[snd], _destRate, RESAMPLER_MAX_DURATION);
         }
     }
 
@@ -46,7 +50,7 @@ namespace chip
         {
             for (int pan = 0; pan <= 1; ++pan)
             {
-                delete[] _buffer[i][pan];
+                delete[] _internalBuffers[i][pan];
             }
         }
     }
@@ -87,8 +91,17 @@ namespace chip
     {
         stream_sample_t** bufferSSG;
 
-        ym2610_stream_update_ay(_chipID, _buffer[CHKIND_SSG], samples);
-        bufferSSG = _buffer[CHKIND_SSG];
+        if (_internalRate[CHKIND_SSG] == _destRate)
+        {
+            ym2610_stream_update_ay(_chipID, _internalBuffers[CHKIND_SSG], samples);
+            bufferSSG = _internalBuffers[CHKIND_SSG];
+        }
+        else
+        {
+            size_t intrSize = _resamplers[CHKIND_SSG].calculateInternalSampleSize(samples);
+            ym2610_stream_update_ay(_chipID, _internalBuffers[CHKIND_SSG], intrSize);
+            bufferSSG = _resamplers[CHKIND_SSG].interpolate(_internalBuffers[CHKIND_SSG], samples, intrSize);
+        }
 
         int16_t* p = stream;
         int amplifier = 4;

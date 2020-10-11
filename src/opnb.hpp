@@ -3,6 +3,7 @@
 
 #include <cstdint>
 #include <cstring> // for size_t
+#include "resampler.hpp"
 
 extern "C" {
     #include "mame/mamedef.h"
@@ -25,7 +26,7 @@ namespace chip
             B,
         };
 
-        OPNB();
+        OPNB(int rate);
         ~OPNB();
 
         void setRegister(uint8_t offset, uint8_t data, Register reg);
@@ -35,7 +36,9 @@ namespace chip
     private:
         int _internalRate[AudioBufferKinds::CHKIND_COUNT];
         int8_t _chipID;
-        stream_sample_t* _buffer[2][2];
+        int _destRate;
+        stream_sample_t* _internalBuffers[2][2];
+        LinearResampler _resamplers[2];
     };
 }
 
