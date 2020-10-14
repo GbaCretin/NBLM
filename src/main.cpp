@@ -18,7 +18,7 @@ int main(int argc, char* argv[])
     // Set volume
     opnb.setRegister(0x08, 0x0F, chip::OPNB::Register::A);
 
-    opnb.mix(stream, rate/4); // 1/4th of a second long stream
+    opnb.mix(stream, rate);
 
     // save stream to file
     std::ofstream outputFile;

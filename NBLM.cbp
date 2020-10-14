@@ -12,6 +12,7 @@
 				<Option type="1" />
 				<Option compiler="gcc" />
 				<Compiler>
+					<Add option="-Og" />
 					<Add option="-g" />
 				</Compiler>
 			</Target>
@@ -31,6 +32,8 @@
 		<Compiler>
 			<Add option="-Wall" />
 		</Compiler>
+		<Unit filename="src/audio_def.hpp" />
+		<Unit filename="src/chip_misc.hpp" />
 		<Unit filename="src/main.cpp" />
 		<Unit filename="src/mame/2610intf.c">
 			<Option compilerVar="CC" />
@@ -54,6 +57,10 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="src/mame/ymdeltat.h" />
+		<Unit filename="src/opnb.cpp" />
+		<Unit filename="src/opnb.hpp" />
+		<Unit filename="src/resampler.cpp" />
+		<Unit filename="src/resampler.hpp" />
 		<Extensions />
 	</Project>
 </CodeBlocks_project_file>

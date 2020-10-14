@@ -56,7 +56,7 @@ namespace chip
 		int srcRate_, destRate_;
 		size_t maxDuration_;
 		float rateRatio_;
-		sample* destBuf_[2];
+		sample* destBuf_[2] = { nullptr, nullptr };
 	};
 
 

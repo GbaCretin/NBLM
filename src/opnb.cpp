@@ -37,8 +37,8 @@ namespace chip
                 _internalBuffers[snd][pan] = new stream_sample_t[INTERNAL_BUFFER_SIZE];
             }
 
-            _resamplers[snd] = LinearResampler();
-            _resamplers[snd].init(_internalRate[snd], _destRate, RESAMPLER_MAX_DURATION);
+            _resamplers[snd] = new LinearResampler();
+            _resamplers[snd]->init(_internalRate[snd], _destRate, RESAMPLER_MAX_DURATION);
         }
     }
 
@@ -46,12 +46,14 @@ namespace chip
     {
         device_stop_ym2610(_chipID);
 
-        for (int i = 0; i <= 1; ++i)
+        for (int snd = 0; snd <= 1; ++snd)
         {
             for (int pan = 0; pan <= 1; ++pan)
             {
-                delete[] _internalBuffers[i][pan];
+                delete[] _internalBuffers[snd][pan];
             }
+
+            delete _resamplers[snd];
         }
     }
 
@@ -98,9 +100,9 @@ namespace chip
         }
         else
         {
-            size_t intrSize = _resamplers[CHKIND_SSG].calculateInternalSampleSize(samples);
+            size_t intrSize = _resamplers[CHKIND_SSG]->calculateInternalSampleSize(samples);
             ym2610_stream_update_ay(_chipID, _internalBuffers[CHKIND_SSG], intrSize);
-            bufferSSG = _resamplers[CHKIND_SSG].interpolate(_internalBuffers[CHKIND_SSG], samples, intrSize);
+            bufferSSG = _resamplers[CHKIND_SSG]->interpolate(_internalBuffers[CHKIND_SSG], samples, intrSize);
         }
 
         int16_t* p = stream;

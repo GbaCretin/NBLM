@@ -38,7 +38,7 @@ namespace chip
         int8_t _chipID;
         int _destRate;
         stream_sample_t* _internalBuffers[2][2];
-        LinearResampler _resamplers[2];
+        LinearResampler* _resamplers[2];
     };
 }
 

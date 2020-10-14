@@ -31,7 +31,7 @@ namespace chip
 	AbstractResampler::AbstractResampler()
 	{
 		for (int pan = LEFT; pan <= RIGHT; ++pan) {
-			destBuf_[pan] = new sample[SMPL_BUF_SIZE_]();
+			destBuf_[pan] = new sample[SMPL_BUF_SIZE_];
 		}
 	}
 
@@ -39,6 +39,7 @@ namespace chip
 	{
 		for (int pan = LEFT; pan <= RIGHT; ++pan) {
 			delete[] destBuf_[pan];
+			destBuf_[pan] = nullptr;
 		}
 	}
 
