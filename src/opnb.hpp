@@ -15,10 +15,12 @@ namespace chip
     class OPNB
     {
     public:
-        enum AudioBufferKinds : int {
-            CHKIND_FMADPCM,
-            CHKIND_SSG,
-            CHKIND_COUNT,
+        int masterAmplifier = 4;
+
+        enum AudioSource : int {
+            ADSOURCE_FMADPCM,
+            ADSOURCE_SSG,
+            ADSOURCE_COUNT,
         };
 
         enum Register : int {
@@ -34,11 +36,11 @@ namespace chip
         void mix(int16_t* stream, size_t samples);
 
     private:
-        int _internalRate[AudioBufferKinds::CHKIND_COUNT];
+        int _internalRate[ADSOURCE_COUNT];
         int8_t _chipID;
         int _destRate;
-        stream_sample_t* _internalBuffers[2][2];
-        LinearResampler* _resamplers[2];
+        stream_sample_t* _internalBuffers[ADSOURCE_COUNT][2];
+        LinearResampler* _resamplers[ADSOURCE_COUNT];
     };
 }
 

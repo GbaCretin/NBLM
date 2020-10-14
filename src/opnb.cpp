@@ -20,15 +20,15 @@ namespace chip
         _destRate = rate;
 
         ym2610_set_ay_emu_core(0);
-        _internalRate[CHKIND_FMADPCM] =
-            device_start_ym2610(_chipID, chipClock, AYDisable, &_internalRate[CHKIND_SSG]);
+        _internalRate[ADSOURCE_FMADPCM] =
+            device_start_ym2610(_chipID, chipClock, AYDisable, &_internalRate[ADSOURCE_SSG]);
 
         device_reset_ym2610(_chipID);
 
         chipCount++;
 
-        std::cout << "FM/ADPCM internal rate: " << _internalRate[CHKIND_FMADPCM] << std::endl;
-        std::cout << "SSG internal rate: " << _internalRate[CHKIND_SSG] << std::endl;
+        std::cout << "FM/ADPCM internal rate: " << _internalRate[ADSOURCE_FMADPCM] << std::endl;
+        std::cout << "SSG internal rate: " << _internalRate[ADSOURCE_SSG] << std::endl;
 
         for (int snd = 0; snd <= 1; ++snd)
         {
@@ -91,29 +91,41 @@ namespace chip
 
     void OPNB::mix(int16_t* stream, size_t samples)
     {
-        stream_sample_t** bufferSSG;
+        stream_sample_t** buffers[ADSOURCE_COUNT];
 
-        if (_internalRate[CHKIND_SSG] == _destRate)
+        if (_internalRate[ADSOURCE_SSG] == _destRate)
         {
-            ym2610_stream_update_ay(_chipID, _internalBuffers[CHKIND_SSG], samples);
-            bufferSSG = _internalBuffers[CHKIND_SSG];
+            ym2610_stream_update_ay(_chipID, _internalBuffers[ADSOURCE_SSG], samples);
+            buffers[ADSOURCE_SSG] = _internalBuffers[ADSOURCE_SSG];
         }
         else
         {
-            size_t intrSize = _resamplers[CHKIND_SSG]->calculateInternalSampleSize(samples);
-            ym2610_stream_update_ay(_chipID, _internalBuffers[CHKIND_SSG], intrSize);
-            bufferSSG = _resamplers[CHKIND_SSG]->interpolate(_internalBuffers[CHKIND_SSG], samples, intrSize);
+            size_t intrSize = _resamplers[ADSOURCE_SSG]->calculateInternalSampleSize(samples);
+            ym2610_stream_update_ay(_chipID, _internalBuffers[ADSOURCE_SSG], intrSize);
+            buffers[ADSOURCE_SSG] = _resamplers[ADSOURCE_SSG]->interpolate(_internalBuffers[ADSOURCE_SSG], samples, intrSize);
+        }
+
+        if (_internalRate[ADSOURCE_FMADPCM] == _destRate)
+        {
+            ym2610_stream_update(_chipID, _internalBuffers[ADSOURCE_FMADPCM], samples);
+            buffers[ADSOURCE_FMADPCM] = _internalBuffers[ADSOURCE_FMADPCM];
+        }
+        else
+        {
+            size_t intrSize = _resamplers[ADSOURCE_FMADPCM]->calculateInternalSampleSize(samples);
+            ym2610_stream_update(_chipID, _internalBuffers[ADSOURCE_FMADPCM], intrSize);
+            buffers[ADSOURCE_FMADPCM] =
+                _resamplers[ADSOURCE_FMADPCM]->interpolate(_internalBuffers[ADSOURCE_FMADPCM], samples, intrSize);
         }
 
         int16_t* p = stream;
-        int amplifier = 4;
 
         for (size_t i = 0; i < samples; ++i)
         {
             for (int channel = 0; channel <= 1; ++channel) // Loop through the LEFT and RIGHT channels
             {
-                double sample = bufferSSG[channel][i] * amplifier;
-                *p = static_cast<int16_t>(sample);
+                double sample = buffers[ADSOURCE_SSG][channel][i] + buffers[ADSOURCE_FMADPCM][channel][i];
+                *p = static_cast<int16_t>(sample * masterAmplifier);
                 p++;
             }
         }

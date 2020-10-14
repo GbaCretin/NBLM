@@ -8,6 +8,12 @@ int main(int argc, char* argv[])
     int16_t* stream = new int16_t[rate*2];
     chip::OPNB opnb(rate);
 
+    // Silence FM channels
+    opnb.setRegister(0x28, 0x01, chip::OPNB::Register::A);
+    opnb.setRegister(0x28, 0x02, chip::OPNB::Register::A);
+    opnb.setRegister(0x28, 0x05, chip::OPNB::Register::A);
+    opnb.setRegister(0x28, 0x06, chip::OPNB::Register::A);
+
     // Set SSG A pitch to A4
     opnb.setRegister(0x00, 0x38, chip::OPNB::Register::A);
     opnb.setRegister(0x01, 0x02, chip::OPNB::Register::A);
@@ -34,6 +40,7 @@ int main(int argc, char* argv[])
     }
 
     outputFile.close();
+    delete[] stream;
 
 	return 0;
 }
