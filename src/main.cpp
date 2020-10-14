@@ -1,6 +1,6 @@
 #include <fstream>
 #include <iostream>
-#include "opnb.hpp"
+#include "chip/opnb.hpp"
 
 int main(int argc, char* argv[])
 {
