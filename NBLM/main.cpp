@@ -10,20 +10,18 @@ int main(int argc, char *argv[])
     int16_t* stream = new int16_t[rate*2];
     OPNBInterface opnb(rate);
 
-    // Silence FM channels
-
-    opnb.setSSGNote(0, audioDef::Note::C, 2);
-    opnb.setSSGNote(1, audioDef::Note::E, 2);
-    opnb.setSSGNote(2, audioDef::Note::G, 2);
+    opnb.setSSGNote(0, audioDef::Note::C, 3);
+    opnb.setSSGNote(1, audioDef::Note::E, 3);
+    //opnb.setSSGNote(2, audioDef::Note::G, 3);
 
     opnb.setSSGMix(0, OPNBInterface::SSGMix::TONE);
     opnb.setSSGMix(1, OPNBInterface::SSGMix::TONE);
-    opnb.setSSGMix(2, OPNBInterface::SSGMix::TONE);
+    //opnb.setSSGMix(2, OPNBInterface::SSGMix::TONE);
 
     // Set volume
     opnb.setSSGVolume(0, 0xF);
     opnb.setSSGVolume(1, 0xF);
-    opnb.setSSGVolume(2, 0xF);
+    //opnb.setSSGVolume(2, 0xF);
 
     opnb.mix(stream, rate);
 

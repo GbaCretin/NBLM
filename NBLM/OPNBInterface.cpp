@@ -11,7 +11,7 @@ const double OPNBInterface::BASE_SSG_PITCHES[audioDef::NOTE_COUNT] =
 };
 
 OPNBInterface::OPNBInterface(int rate)
-  : _opnb(rate)
+  : _opnb(rate), _ssgMixEnableFlags(0xFF)
 {
   setDefaults();
 }
@@ -48,7 +48,7 @@ void OPNBInterface::stopSSGChannel(uint8_t channel)
 {
     assert(channel < 3);
 
-    _ssgMixEnableFlags &= ~(0b1001 << channel);
+    _ssgMixEnableFlags |= 0b1001 << channel;
     _opnb.setRegister(chip::OPNB::REG_SSG_VOL_ENV+channel, 0x00, chip::OPNB::Register::A);
     _opnb.setRegister(chip::OPNB::REG_SSG_MIX_ENABLE, _ssgMixEnableFlags, chip::OPNB::Register::A);
 }
@@ -70,14 +70,14 @@ void OPNBInterface::setSSGNote(uint8_t channel, audioDef::Note note, uint8_t oct
     uint16_t ssgPitch = static_cast<uint16_t>(
                 std::round(250000 / (BASE_SSG_PITCHES[note] * std::pow(2, octave-2))));
 
-    _opnb.setRegister(chip::OPNB::REG_SSG_FINE_TUNE+channel, ssgPitch & 0x0F, chip::OPNB::Register::A);
-    _opnb.setRegister(chip::OPNB::REG_SSG_COARSE_TUNE+channel, ssgPitch >> 8, chip::OPNB::Register::A);
+    _opnb.setRegister(chip::OPNB::REG_SSG_FINE_TUNE+channel*2, ssgPitch & 0xFF, chip::OPNB::Register::A);
+    _opnb.setRegister(chip::OPNB::REG_SSG_COARSE_TUNE+channel*2, ssgPitch >> 8, chip::OPNB::Register::A);
 }
 
 void OPNBInterface::setSSGMix(uint8_t channel, SSGMix mix)
 {
     assert(channel < 3);
 
-    _ssgMixEnableFlags |= mix << channel;
+    _ssgMixEnableFlags &= ~(mix << channel);
     _opnb.setRegister(chip::OPNB::REG_SSG_MIX_ENABLE, _ssgMixEnableFlags, chip::OPNB::Register::A);
 }

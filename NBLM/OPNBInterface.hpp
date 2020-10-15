@@ -43,7 +43,7 @@ public:
     }
 private:
     chip::OPNB _opnb;
-    uint8_t _ssgMixEnableFlags = 0x00;
+    uint8_t _ssgMixEnableFlags;
 };
 
 #endif // OPNBINTERFACE_HPP_INCLUDED
