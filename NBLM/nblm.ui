@@ -14,30 +14,20 @@
    <string>NBLM</string>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <widget class="QWidget" name="horizontalLayoutWidget">
+   <widget class="QWidget" name="verticalLayoutWidget">
     <property name="geometry">
      <rect>
-      <x>19</x>
+      <x>-1</x>
       <y>-1</y>
-      <width>241</width>
+      <width>281</width>
       <height>191</height>
      </rect>
     </property>
-    <layout class="QHBoxLayout" name="horizontalLayout">
+    <layout class="QVBoxLayout" name="verticalLayout">
      <item alignment="Qt::AlignHCenter">
       <widget class="QLabel" name="label">
        <property name="text">
-        <string>Click the button -&gt;</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QPushButton" name="helloWorldPushButton">
-       <property name="toolTip">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;CLICK ME&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-       </property>
-       <property name="text">
-        <string>Click me!</string>
+        <string>So empty!</string>
        </property>
       </widget>
      </item>

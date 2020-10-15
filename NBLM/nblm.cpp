@@ -13,9 +13,3 @@ NBLM::~NBLM()
 {
     delete ui;
 }
-
-
-void NBLM::on_helloWorldPushButton_clicked()
-{
-    std::cout << "Hell World :)" << std::endl;
-}

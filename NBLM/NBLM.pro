@@ -9,10 +9,31 @@ CONFIG += c++11
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
+    OPNBInterface.cpp \
+    chip/mame/2610intf.c \
+    chip/mame/ay8910.c \
+    chip/mame/emu2149.c \
+    chip/mame/fm.c \
+    chip/mame/ymdeltat.c \
+    chip/opnb.cpp \
+    chip/resampler.cpp \
     main.cpp \
     nblm.cpp
 
 HEADERS += \
+    OPNBInterface.hpp \
+    audioDef.hpp \
+    chip/audio_def.hpp \
+    chip/chip_misc.hpp \
+    chip/mame/2610intf.h \
+    chip/mame/ay8910.h \
+    chip/mame/emu2149.h \
+    chip/mame/emutypes.h \
+    chip/mame/fm.h \
+    chip/mame/mamedef.h \
+    chip/mame/ymdeltat.h \
+    chip/opnb.hpp \
+    chip/resampler.hpp \
     nblm.h
 
 FORMS += \

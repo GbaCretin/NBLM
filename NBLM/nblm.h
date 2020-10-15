@@ -15,9 +15,6 @@ public:
     NBLM(QWidget *parent = nullptr);
     ~NBLM();
 
-private slots:
-    void on_helloWorldPushButton_clicked();
-
 private:
     Ui::NBLM *ui;
 };
