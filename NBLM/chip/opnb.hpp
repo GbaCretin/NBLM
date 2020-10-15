@@ -15,7 +15,16 @@ namespace chip
     class OPNB
     {
     public:
-        int masterAmplifier = 4;
+        static const int REG_SSG_FINE_TUNE;
+        static const int REG_SSG_COARSE_TUNE;
+        static const int REG_SSG_NOISE_TUNE;
+        static const int REG_SSG_MIX_ENABLE;
+        static const int REG_SSG_VOL;
+        static const int REG_SSG_VOL_ENV;
+        static const int REG_SSG_COARSE_ENV;
+        static const int REG_SSG_VOL_ENV_SHAPE;
+
+        double masterAmplifier;
 
         enum AudioSource : int {
             ADSOURCE_FMADPCM,

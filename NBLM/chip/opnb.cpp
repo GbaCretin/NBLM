@@ -1,5 +1,5 @@
 #include "opnb.hpp"
-
+#include "chip/chip_misc.hpp"
 #include <iostream>
 
 stream_sample_t* DUMMYBUF[] = { nullptr, nullptr };
@@ -11,7 +11,18 @@ namespace chip
     int8_t chipCount;
     const size_t INTERNAL_BUFFER_SIZE = 0x80000;
     const size_t RESAMPLER_MAX_DURATION = 0x8000;
+
+    const int OPNB::REG_SSG_FINE_TUNE     = 0x00;
+    const int OPNB::REG_SSG_COARSE_TUNE   = 0x01;
+    const int OPNB::REG_SSG_NOISE_TUNE    = 0x06;
+    const int OPNB::REG_SSG_MIX_ENABLE    = 0x07;
+    const int OPNB::REG_SSG_VOL           = 0x08;
+    const int OPNB::REG_SSG_VOL_ENV       = 0x0B;
+    const int OPNB::REG_SSG_COARSE_ENV    = 0x0C;
+    const int OPNB::REG_SSG_VOL_ENV_SHAPE = 0x0D;
+
     OPNB::OPNB(int rate)
+        : masterAmplifier(1)
     {
         int chipClock = 3993600 * 2;
         uint8_t AYDisable = 0;	// Enable
@@ -125,7 +136,7 @@ namespace chip
             for (int channel = 0; channel <= 1; ++channel) // Loop through the LEFT and RIGHT channels
             {
                 double sample = buffers[ADSOURCE_SSG][channel][i] + buffers[ADSOURCE_FMADPCM][channel][i];
-                *p = static_cast<int16_t>(sample * masterAmplifier);
+                *p = static_cast<int16_t>(chip::clamp(sample * masterAmplifier, -32768.0, 32767.0));
                 p++;
             }
         }

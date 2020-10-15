@@ -252,12 +252,12 @@ int device_start_ym2610(UINT8 ChipID, int clock, UINT8 AYDisable, int* AYrate)
 	//					1 - YM2610B
 	
 	//static const ym2610_interface generic_2610 = { 0 };
-	static const ay8910_interface generic_ay8910 =
+    static const ay8910_interface generic_ay8910 =
 	{
 		AY8910_LEGACY_OUTPUT | AY8910_SINGLE_OUTPUT,
 		AY8910_DEFAULT_LOADS
 		//DEVCB_NULL, DEVCB_NULL, DEVCB_NULL, DEVCB_NULL
-	};
+    };
 	//const ym2610_interface *intf = device->static_config ? (const ym2610_interface *)device->static_config : &generic_2610;
 	//const ym2610_interface *intf = &generic_2610;
 	int rate;
@@ -268,13 +268,13 @@ int device_start_ym2610(UINT8 ChipID, int clock, UINT8 AYDisable, int* AYrate)
 	ym2610_state *info;
 	//astring *name = astring_alloc();
 	//sound_type type = sound_get_type(device);
-	unsigned char ChipType;
+    unsigned char ChipType;
 
 	if (ChipID >= MAX_CHIPS)
 		return 0;
 	
 	info = &YM2610Data[ChipID];
-	ChipType = (clock & 0x80000000) ? 0x01 : 0x00;
+    ChipType = (clock & 0x80000000) ? 0x01 : 0x00;
 	clock &= 0x7FFFFFFF;
 	rate = clock/72;
 	if ((CHIP_SAMPLING_MODE == 0x01 && rate < CHIP_SAMPLE_RATE) ||

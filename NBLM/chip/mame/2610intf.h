@@ -3,7 +3,7 @@
 #include "fm.h"
 #include "ay8910.h"
 #include "emu2149.h"
-
+#include "mamedef.h"
 
 void ym2610_update_request(void *param);
 
