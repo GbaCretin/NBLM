@@ -1,18 +1,18 @@
-#include "nblm.h"
+#include "nblm.hpp"
 #include "OPNBInterface.hpp"
 #include <QApplication>
 #include <iostream>
 #include <fstream>
+
+const OPNBInterface::FMOperatorData instr[4] =
+{
+};
 
 int main(int argc, char *argv[])
 {
     const int rate = 44100;
     int16_t* stream = new int16_t[rate*2];
     OPNBInterface opnb(rate);
-
-    opnb.setSSGNoiseTune(1, 0x10);
-    opnb.setSSGMix(1, OPNBInterface::SSGMix::NOISE);
-    opnb.setSSGVolume(1, 0xF);
 
     opnb.mix(stream, rate);
 

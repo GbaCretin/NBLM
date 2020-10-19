@@ -1,5 +1,5 @@
 #include <iostream>
-#include "nblm.h"
+#include "nblm.hpp"
 #include "ui_nblm.h"
 
 NBLM::NBLM(QWidget *parent)

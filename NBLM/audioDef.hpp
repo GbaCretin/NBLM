@@ -19,5 +19,13 @@ namespace audioDef
         B,
         NOTE_COUNT
     };
+
+    enum Panning : int
+    {
+        NONE,
+        LEFT,
+        RIGHT,
+        CENTER
+    };
 }
 #endif // AUDIODEF_HPP

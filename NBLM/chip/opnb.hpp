@@ -15,6 +15,20 @@ namespace chip
     class OPNB
     {
     public:
+        static const int REG_FM_LFO_CNT;
+        static const int REG_FM_KEY_ON;
+        static const int REG_FM_CH_FNUM;
+        static const int REG_FM_CH_FBLOCK;
+        static const int REG_FM_CH_FBALGO;
+        static const int REG_FM_CH_LRAMSPMS;
+        static const int REG_FM_OP_DTMUL;
+        static const int REG_FM_OP_TVOL;
+        static const int REG_FM_OP_KSAR;
+        static const int REG_FM_OP_AMDR;
+        static const int REG_FM_SUSR;
+        static const int REG_FM_SLRR;
+        static const int REG_FM_ENVGN;
+
         static const int REG_SSG_FINE_TUNE;
         static const int REG_SSG_COARSE_TUNE;
         static const int REG_SSG_NOISE_TUNE;

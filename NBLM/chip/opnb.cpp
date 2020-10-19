@@ -1,5 +1,6 @@
 #include "opnb.hpp"
 #include "chip/chip_misc.hpp"
+#include "math.hpp"
 #include <iostream>
 
 stream_sample_t* DUMMYBUF[] = { nullptr, nullptr };
@@ -11,6 +12,20 @@ namespace chip
     int8_t chipCount;
     const size_t INTERNAL_BUFFER_SIZE = 0x80000;
     const size_t RESAMPLER_MAX_DURATION = 0x8000;
+
+    const int OPNB::REG_FM_LFO_CNT        = 0x22;
+    const int OPNB::REG_FM_KEY_ON         = 0x28;
+    const int OPNB::REG_FM_CH_FNUM        = 0xA1;
+    const int OPNB::REG_FM_CH_FBLOCK      = 0xA5;
+    const int OPNB::REG_FM_CH_FBALGO      = 0xB1;
+    const int OPNB::REG_FM_CH_LRAMSPMS    = 0xB5;
+    const int OPNB::REG_FM_OP_DTMUL       = 0x31;
+    const int OPNB::REG_FM_OP_TVOL        = 0x41;
+    const int OPNB::REG_FM_OP_KSAR        = 0x51;
+    const int OPNB::REG_FM_OP_AMDR        = 0x61;
+    const int OPNB::REG_FM_SUSR           = 0x71;
+    const int OPNB::REG_FM_SLRR           = 0x81;
+    const int OPNB::REG_FM_ENVGN          = 0x91;
 
     const int OPNB::REG_SSG_FINE_TUNE     = 0x00;
     const int OPNB::REG_SSG_COARSE_TUNE   = 0x01;
@@ -136,7 +151,7 @@ namespace chip
             for (int channel = 0; channel <= 1; ++channel) // Loop through the LEFT and RIGHT channels
             {
                 double sample = buffers[ADSOURCE_SSG][channel][i] + buffers[ADSOURCE_FMADPCM][channel][i];
-                *p = static_cast<int16_t>(chip::clamp(sample * masterAmplifier, -32768.0, 32767.0));
+                *p = static_cast<int16_t>(math::clamp(sample * masterAmplifier, -32768.0, 32767.0));
                 p++;
             }
         }

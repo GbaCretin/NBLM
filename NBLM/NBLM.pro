@@ -34,7 +34,8 @@ HEADERS += \
     chip/mame/ymdeltat.h \
     chip/opnb.hpp \
     chip/resampler.hpp \
-    nblm.h
+    math.hpp \
+    nblm.hpp
 
 FORMS += \
     nblm.ui

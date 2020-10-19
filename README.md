@@ -4,3 +4,9 @@ I'd like to thank the people behind
 [VGMPlay](https://github.com/vgmrips/vgmplay) and 
 [BambooTracker](https://github.com/rerrahkr/BambooTracker)! 
 Without them I would have never been able to write the backend of NBLM!
+
+## TODO
+
+* Implement FM interface
+
+* Define and Implement ADPCMA interface
