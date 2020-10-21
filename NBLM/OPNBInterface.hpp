@@ -85,6 +85,10 @@ private:
     uint8_t _toOPNBFMChannel(uint8_t channel);
 
     chip::OPNB _opnb;
+    uint8_t _fmFnumRegisters[4];
+    uint8_t _fmFblockRegisters[4];
+    uint8_t _fmFbalgoRegisters[4];
+    uint8_t _fmLramspmsRegisters[4];
 };
 
 #endif // OPNBINTERFACE_HPP_INCLUDED

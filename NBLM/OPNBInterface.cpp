@@ -13,8 +13,8 @@ void OPNBInterface::setDefaults()
     for (int i = 0; i < OPNBInterface::ADPCMA_CHANNEL_COUNT; ++i)
       stopADPCMAChannel(i);
 
-    /*for (int i = 0; i < OPNBInterface::FM_CHANNEL_COUNT; ++i)
-      stopFMChannel(i);*/
+    for (int i = 0; i < OPNBInterface::FM_CHANNEL_COUNT; ++i)
+      stopFMChannel(i);
 
     for (int i = 0; i < OPNBInterface::SSG_CHANNEL_COUNT; ++i)
       stopSSGChannel(i);
@@ -77,8 +77,9 @@ void OPNBInterface::setFMFeedback(uint8_t channel, uint8_t feedback)
     assert(feedback < 8);
 
     uint8_t addr = _calculateFMChannelAddress(channel, chip::OPNB::REG_FM_CH_FBALGO, reg);
-    uint8_t data = _opnb.getRegister(addr, reg) & ~FB_MASK; // get fbalgo and clear feedback
-    _opnb.setRegister(addr, data | (feedback<<3), reg);
+    _fmFbalgoRegisters[channel] &= ~FB_MASK;
+    _fmFbalgoRegisters[channel] |= feedback<<3;
+    _opnb.setRegister(addr, _fmFbalgoRegisters[channel], reg);
 }
 
 void OPNBInterface::setFMAlgorithm(uint8_t channel, uint8_t algorithm)
@@ -90,8 +91,9 @@ void OPNBInterface::setFMAlgorithm(uint8_t channel, uint8_t algorithm)
     assert(algorithm < 8);
 
     uint8_t addr = _calculateFMChannelAddress(channel, chip::OPNB::REG_FM_CH_FBALGO, reg);
-    uint8_t data = _opnb.getRegister(addr, reg) & ~ALGO_MASK; // get fbalgo and clear algorithm
-    _opnb.setRegister(addr, data | algorithm, reg);
+    _fmFbalgoRegisters[channel] &= ~ALGO_MASK;
+    _fmFbalgoRegisters[channel] |= algorithm;
+    _opnb.setRegister(addr, _fmFbalgoRegisters[channel], reg);
 }
 
 void OPNBInterface::setFMPanning(uint8_t channel, audioDef::Panning panning)
@@ -102,8 +104,9 @@ void OPNBInterface::setFMPanning(uint8_t channel, audioDef::Panning panning)
     assert(channel < 4);
 
     uint8_t addr = _calculateFMChannelAddress(channel, chip::OPNB::REG_FM_CH_LRAMSPMS, reg);
-    uint8_t data = _opnb.getRegister(addr, reg) & ~PAN_MASK; // get lramspms and clear panning (l, r)
-    _opnb.setRegister(addr, data | (panning<<6), reg);
+    _fmLramspmsRegisters[channel] &= ~PAN_MASK;
+    _fmLramspmsRegisters[channel] |= panning<<6;
+    _opnb.setRegister(addr, _fmLramspmsRegisters[channel], reg);
 }
 
 void OPNBInterface::setFMAMS(uint8_t channel, uint8_t ams)
@@ -115,8 +118,9 @@ void OPNBInterface::setFMAMS(uint8_t channel, uint8_t ams)
     assert(ams < 4);
 
     uint8_t addr = _calculateFMChannelAddress(channel, chip::OPNB::REG_FM_CH_LRAMSPMS, reg);
-    uint8_t data = _opnb.getRegister(addr, reg) & ~AMS_MASK; // get lramspms and clear ams
-    _opnb.setRegister(addr, data | (ams<<4), reg);
+    _fmLramspmsRegisters[channel] &= ~AMS_MASK;
+    _fmLramspmsRegisters[channel] |= ams<<4;
+    _opnb.setRegister(addr, _fmLramspmsRegisters[channel], reg);
 }
 
 void OPNBInterface::setFMPMS(uint8_t channel, uint8_t pms)
@@ -128,8 +132,9 @@ void OPNBInterface::setFMPMS(uint8_t channel, uint8_t pms)
     assert(pms < 8);
 
     uint8_t addr = _calculateFMChannelAddress(channel, chip::OPNB::REG_FM_CH_LRAMSPMS, reg);
-    uint8_t data = _opnb.getRegister(addr, reg) & ~PMS_MASK; // get lramspms and clear ams
-    _opnb.setRegister(addr, data | (pms<<4), reg);
+    _fmLramspmsRegisters[channel] &= ~PMS_MASK;
+    _fmLramspmsRegisters[channel] |= pms;
+    _opnb.setRegister(addr, _fmLramspmsRegisters[channel], reg);
 }
 
 void OPNBInterface::setFMOperatorRegisters(uint8_t channel, uint8_t op, const FMOperatorData &data)
@@ -172,7 +177,7 @@ void OPNBInterface::setFMOperatorControl(uint8_t channel, uint8_t opControl)
 
     uint8_t internalChannel = _toOPNBFMChannel(channel);
 
-    _opnb.setRegister(chip::OPNB::REG_FM_KEY_ON, channel | (opControl<<4), chip::OPNB::Register::A);
+    _opnb.setRegister(chip::OPNB::REG_FM_KEY_ON, internalChannel | (opControl<<4), chip::OPNB::Register::A);
 }
 
 uint8_t OPNBInterface::_calculateFMChannelAddress(uint8_t channel, uint8_t address, chip::OPNB::Register& reg)
@@ -190,19 +195,19 @@ uint8_t OPNBInterface::_calculateFMOperatorAddress(uint8_t channel, uint8_t op, 
 {
     const uint8_t OP_ADDRESS_OFFSETS[] =
     {
-        0, 4, 8, 12
+        0, 8, 4, 12
     };
 
     assert(channel < 4);
     assert(op < 4);
 
-    channel += OP_ADDRESS_OFFSETS[op];
+    address += OP_ADDRESS_OFFSETS[op];
 
     if (channel % 2 != 0) address++;
     if (channel < 2) reg = chip::OPNB::Register::A;
     else             reg = chip::OPNB::Register::B;
 
-    return channel;
+    return address;
 }
 
 uint8_t OPNBInterface::_toOPNBFMChannel(uint8_t channel)
@@ -237,7 +242,6 @@ void OPNBInterface::stopSSGChannel(uint8_t channel)
     assert(channel < 3);
 
     setSSGMix(channel, SSGMix::NONE);
-    _opnb.setRegister(chip::OPNB::REG_SSG_MIX_ENABLE, (uint8_t)_ssgMixEnableFlags, chip::OPNB::Register::A);
 }
 
 void OPNBInterface::setSSGVolume(uint8_t channel, uint8_t volume)
