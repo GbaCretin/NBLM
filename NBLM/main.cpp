@@ -47,23 +47,23 @@ const OPNBInterface::FMOperatorData instr[4] =
 int main(int argc, char *argv[])
 {
     const int rate = 44100;
-    const uint8_t fmChannel = 0;
+    const uint8_t fmChannel = 3;
     int16_t* stream = new int16_t[rate*2];
-    OPNBInterface opnb(rate);
+    OPNBInterface opnbIntf(rate);
 
-    opnb.setFMAlgorithm(fmChannel, 4);
-    opnb.setFMFeedback(fmChannel, 4);
-    opnb.setFMPanning(fmChannel, audioDef::Panning::CENTER);
-    opnb.setFMPMS(fmChannel, 0);
-    opnb.setFMAMS(fmChannel, 0);
+    opnbIntf.setFMAlgorithm(fmChannel, 4);
+    opnbIntf.setFMFeedback(fmChannel, 4);
+    opnbIntf.setFMPanning(fmChannel, audioDef::Panning::CENTER);
+    opnbIntf.setFMPMS(fmChannel, 0);
+    opnbIntf.setFMAMS(fmChannel, 0);
 
     for (int op = 0; op < 4; ++op)
-        opnb.setFMOperatorRegisters(fmChannel, op, instr[op]);
+        opnbIntf.setFMOperatorRegisters(fmChannel, op, instr[op]);
 
-    opnb.setFMFrequency(fmChannel, 309, 3);
-    opnb.setFMOperatorControl(fmChannel, OPNBInterface::FM_OPERATOR_ALL_MASK);
+    opnbIntf.setFMFrequency(fmChannel, 309, 3);
+    opnbIntf.setFMOperatorControl(fmChannel, OPNBInterface::FM_OPERATOR_ALL_MASK);
 
-    opnb.mix(stream, rate);
+    opnbIntf.mix(stream, rate);
 
     // save stream to file
     std::ofstream outputFile;

@@ -5,7 +5,15 @@
 OPNBInterface::OPNBInterface(int rate)
   : _opnb(rate)
 {
-  setDefaults();
+    for (int fmCh = 0; fmCh < 4; ++fmCh)
+    {
+        _fmFbalgoRegisters[fmCh]   = 0x00;
+        _fmFnumRegisters[fmCh]     = 0x00;
+        _fmFblockRegisters[fmCh]   = 0x00;
+        _fmLramspmsRegisters[fmCh] = 0x00;
+    }
+
+    setDefaults();
 }
 
 void OPNBInterface::setDefaults()
@@ -177,7 +185,7 @@ void OPNBInterface::setFMOperatorControl(uint8_t channel, uint8_t opControl)
 
     uint8_t internalChannel = _toOPNBFMChannel(channel);
 
-    _opnb.setRegister(chip::OPNB::REG_FM_KEY_ON, internalChannel | (opControl<<4), chip::OPNB::Register::A);
+    _opnb.setRegister(chip::OPNB::REG_FM_KEY_ON, internalChannel | opControl, chip::OPNB::Register::A);
 }
 
 uint8_t OPNBInterface::_calculateFMChannelAddress(uint8_t channel, uint8_t address, chip::OPNB::Register& reg)
