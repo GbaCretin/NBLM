@@ -3,6 +3,8 @@
 
 #include "chip/opnb.hpp"
 #include "audioDef.hpp"
+#include <vector>
+#include <QByteArray>
 
 class OPNBInterface
 {
@@ -31,6 +33,12 @@ public:
         uint8_t ssgEg;
     };
 
+    struct ADPCMASampleAddr
+    {
+        uint16_t start;
+        uint16_t end;
+    };
+
     static const int ADPCMA_CHANNEL_COUNT;
     static const int FM_CHANNEL_COUNT;
     static const int SSG_CHANNEL_COUNT;
@@ -44,12 +52,18 @@ public:
     static const uint8_t FM_OPERATOR_ALL_MASK;
 
     OPNBInterface(int rate);
+    ~OPNBInterface();
     void setDefaults();
 
     void stopADPCMAChannel(uint8_t channel);
+    void playADPCMAChannel(uint8_t channel);
     void setADPCMAChannelVolume(uint8_t channel, uint8_t volume);
+    void setADPCMAPanning(uint8_t channel, audioDef::Panning pan);
     void setADPCMAMasterVolume(uint8_t volume);
-    void setADPCMASample(uint8_t channel, uint16_t sampleStart, uint16_t sampleEnd);
+    void setADPCMASample(uint8_t channel, const ADPCMASampleAddr adpcmaSampleAddr);
+    /// Assumes that PCMA files are already padded to a size divisible by 256 and
+    /// that the QByteArrays are 0-terminated
+    std::vector<ADPCMASampleAddr> buildAndWriteADPCMARom(const std::vector<QByteArray>& data);
 
     void stopFMChannel(uint8_t channel);
     void setFMFrequency(uint8_t channel, uint16_t fnumber, uint8_t block);
@@ -85,10 +99,10 @@ private:
     uint8_t _toOPNBFMChannel(uint8_t channel);
 
     chip::OPNB _opnb;
-    uint8_t _fmFnumRegisters[4];
-    uint8_t _fmFblockRegisters[4];
     uint8_t _fmFbalgoRegisters[4];
     uint8_t _fmLramspmsRegisters[4];
+    uint8_t _adpcmaChannelVolumeRegisters[6];
+    uint8_t* _pcmRomBuffer;
 };
 
 #endif // OPNBINTERFACE_HPP_INCLUDED

@@ -4641,6 +4641,15 @@ int ym2610_timer_over(void *chip,int c)
 	return F2610->OPN.ST.irq;
 }
 
+/**
+ * @brief ym2610_write_pcmrom
+ * @param chip
+ * @param rom_id 0x01: Writes to ADPCM ROM 0x02: Writes to DELTA-T rom (???)
+ * @param ROMSize
+ * @param DataStart
+ * @param DataLength
+ * @param ROMData
+ */
 void ym2610_write_pcmrom(void *chip, UINT8 rom_id, offs_t ROMSize, offs_t DataStart,
 						 offs_t DataLength, const UINT8* ROMData)
 {

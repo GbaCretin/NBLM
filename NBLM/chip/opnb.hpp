@@ -38,6 +38,14 @@ namespace chip
         static const int REG_SSG_COARSE_ENV;
         static const int REG_SSG_VOL_ENV_SHAPE;
 
+        static const int REG_PA_CTRL;
+        static const int REG_PA_MVOL;
+        static const int REG_PA_CVOL;
+        static const int REG_PA_STARTL;
+        static const int REG_PA_STARTH;
+        static const int REG_PA_ENDL;
+        static const int REG_PA_ENDH;
+
         double masterAmplifier;
 
         enum AudioSource : int {
@@ -57,6 +65,7 @@ namespace chip
         void setRegister(uint8_t offset, uint8_t data, Register reg);
         uint8_t getRegister(uint8_t offset, Register reg);
         void mix(int16_t* stream, size_t samples);
+        void writeRomADPCM(size_t romSize, offs_t dataStart, offs_t dataLength, const uint8_t* data);
 
     private:
         int _internalRate[ADSOURCE_COUNT];

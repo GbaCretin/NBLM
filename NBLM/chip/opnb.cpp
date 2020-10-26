@@ -36,6 +36,14 @@ namespace chip
     const int OPNB::REG_SSG_COARSE_ENV    = 0x0C;
     const int OPNB::REG_SSG_VOL_ENV_SHAPE = 0x0D;
 
+    const int OPNB::REG_PA_CTRL   = 0x00;
+    const int OPNB::REG_PA_MVOL   = 0x01;
+    const int OPNB::REG_PA_CVOL   = 0x08;
+    const int OPNB::REG_PA_STARTL = 0x10;
+    const int OPNB::REG_PA_STARTH = 0x18;
+    const int OPNB::REG_PA_ENDL   = 0x20;
+    const int OPNB::REG_PA_ENDH   = 0x28;
+
     OPNB::OPNB(int rate)
         : masterAmplifier(1)
     {
@@ -155,5 +163,12 @@ namespace chip
                 p++;
             }
         }
+    }
+
+    void OPNB::writeRomADPCM(size_t romSize, offs_t dataStart, offs_t dataLength, const uint8_t* data)
+    {
+        const uint8_t ROM_ID_ADPCM = 0x01;
+
+        ym2610_write_data_pcmrom(_chipID, ROM_ID_ADPCM, romSize, dataStart, dataLength, data);
     }
 }

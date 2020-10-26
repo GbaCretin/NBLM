@@ -3,66 +3,52 @@
 #include <QApplication>
 #include <iostream>
 #include <fstream>
+#include <vector>
+#include <QByteArray>
+#include <QFile>
 
-const OPNBInterface::FMOperatorData instr[4] =
+const char* PCMA_FILE_PATHS[] =
 {
-    {
-        0, 1,   // dt, mul
-        7,      // tl
-        0, 31,  // ks, ar
-        0, 9,   // am, dr
-        15,     // sr
-        15, 15, // sl, rr
-        0       // ssg-eg
-    },
-    {
-        0, 1,   // dt, mul
-        8,      // tl
-        0, 31,  // ks, ar
-        0, 9,   // am, dr
-        15,     // sr
-        15, 15, // sl, rr
-        0       // ssg-eg
-    },
-    {
-        0, 0,   // dt, mul
-        36,      // tl
-        0, 31,  // ks, ar
-        0, 10,   // am, dr
-        15,     // sr
-        15, 15, // sl, rr
-        0       // ssg-eg
-    },
-    {
-        0, 1,   // dt, mul
-        17,      // tl
-        0, 31,  // ks, ar
-        0, 9,   // am, dr
-        15,     // sr
-        15, 15, // sl, rr
-        0       // ssg-eg
-    }
+    "../samples/GRAND_PIANO_C3.pcma",
+    "../samples/GRAND_PIANO_C#3.pcma",
+    "../samples/GRAND_PIANO_D3.pcma",
+    "../samples/GRAND_PIANO_D#3.pcma",
+    "../samples/GRAND_PIANO_E3.pcma",
+    "../samples/GRAND_PIANO_F3.pcma",
+    "../samples/GRAND_PIANO_F#3.pcma",
+    "../samples/GRAND_PIANO_G3.pcma",
+    "../samples/GRAND_PIANO_G#3.pcma",
+    "../samples/GRAND_PIANO_A3.pcma",
+    "../samples/GRAND_PIANO_A#3.pcma",
+    "../samples/GRAND_PIANO_B3.pcma"
 };
 
 int main(int argc, char *argv[])
 {
     const int rate = 44100;
-    const uint8_t fmChannel = 3;
     int16_t* stream = new int16_t[rate*2];
     OPNBInterface opnbIntf(rate);
+    uint8_t adpcmaChannel = 0;
 
-    opnbIntf.setFMAlgorithm(fmChannel, 4);
-    opnbIntf.setFMFeedback(fmChannel, 4);
-    opnbIntf.setFMPanning(fmChannel, audioDef::Panning::CENTER);
-    opnbIntf.setFMPMS(fmChannel, 0);
-    opnbIntf.setFMAMS(fmChannel, 0);
+    // Open pcma files and write their contents into the file buffers
+    std::vector<QByteArray> pcmaFileBuffers;
 
-    for (int op = 0; op < 4; ++op)
-        opnbIntf.setFMOperatorRegisters(fmChannel, op, instr[op]);
+    uint pcmaSamplesNum = sizeof(PCMA_FILE_PATHS) / sizeof(PCMA_FILE_PATHS[0]);
 
-    opnbIntf.setFMFrequency(fmChannel, 309, 3);
-    opnbIntf.setFMOperatorControl(fmChannel, OPNBInterface::FM_OPERATOR_ALL_MASK);
+    for (uint i = 0; i < pcmaSamplesNum; ++i)
+    {
+        QFile inFile(PCMA_FILE_PATHS[i]);
+        pcmaFileBuffers.push_back(inFile.readAll());
+    }
 
+    std::vector<OPNBInterface::ADPCMASampleAddr> adpcmaSampleAddrs =
+            opnbIntf.buildAndWriteADPCMARom(pcmaFileBuffers);
+
+    opnbIntf.setADPCMAMasterVolume(63);
+    opnbIntf.setADPCMAChannelVolume(adpcmaChannel, 31);
+    opnbIntf.setADPCMAPanning(adpcmaChannel, audioDef::Panning::CENTER);
+    opnbIntf.setADPCMASample(adpcmaChannel, adpcmaSampleAddrs[0]);
+    opnbIntf.playADPCMAChannel(adpcmaChannel);
     opnbIntf.mix(stream, rate);
 
     // save stream to file

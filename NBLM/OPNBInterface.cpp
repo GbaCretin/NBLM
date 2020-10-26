@@ -1,5 +1,6 @@
 #include "OPNBInterface.hpp"
 #include <cassert>
+#include <algorithm>
 
 /************************************************ OPNB ************************************************/
 OPNBInterface::OPNBInterface(int rate)
@@ -8,12 +9,16 @@ OPNBInterface::OPNBInterface(int rate)
     for (int fmCh = 0; fmCh < 4; ++fmCh)
     {
         _fmFbalgoRegisters[fmCh]   = 0x00;
-        _fmFnumRegisters[fmCh]     = 0x00;
-        _fmFblockRegisters[fmCh]   = 0x00;
         _fmLramspmsRegisters[fmCh] = 0x00;
     }
 
+    _pcmRomBuffer = new uint8_t[0x1000000]; // 16mb
     setDefaults();
+}
+
+OPNBInterface::~OPNBInterface()
+{
+    delete[] _pcmRomBuffer;
 }
 
 void OPNBInterface::setDefaults()
@@ -39,7 +44,98 @@ const int OPNBInterface::ADPCMA_CHANNEL_COUNT = 6;
 
 void OPNBInterface::stopADPCMAChannel(uint8_t channel)
 {
-    // TODO
+    const uint8_t DUMP_BIT_MASK = 0b10000000;
+
+    assert(channel < 6);
+    _opnb.setRegister(chip::OPNB::REG_PA_CTRL, (1<<channel) | DUMP_BIT_MASK, chip::OPNB::Register::B);
+}
+
+void OPNBInterface::playADPCMAChannel(uint8_t channel)
+{
+    assert(channel < 6);
+    _opnb.setRegister(chip::OPNB::REG_PA_CTRL, 1<<channel, chip::OPNB::Register::B);
+}
+
+void OPNBInterface::setADPCMAChannelVolume(uint8_t channel, uint8_t volume)
+{
+    const uint8_t CVOL_MASK = 0b00011111;
+
+    assert(channel < 6);
+    assert(volume < 32);
+
+    _adpcmaChannelVolumeRegisters[channel] &= ~CVOL_MASK;
+    _adpcmaChannelVolumeRegisters[channel] |= volume;
+    _opnb.setRegister(chip::OPNB::REG_PA_CVOL+channel, _adpcmaChannelVolumeRegisters[channel], chip::OPNB::Register::B);
+}
+
+void OPNBInterface::setADPCMAPanning(uint8_t channel, audioDef::Panning pan)
+{
+    const uint8_t PAN_MASK = 0b11000000;
+    assert(channel < 6);
+
+    _adpcmaChannelVolumeRegisters[channel] &= ~PAN_MASK;
+    _adpcmaChannelVolumeRegisters[channel] |= pan<<6;
+    _opnb.setRegister(chip::OPNB::REG_PA_CVOL+channel, _adpcmaChannelVolumeRegisters[channel], chip::OPNB::Register::B);
+}
+
+void OPNBInterface::setADPCMAMasterVolume(uint8_t volume)
+{
+    assert(volume < 64);
+    _opnb.setRegister(chip::OPNB::REG_PA_MVOL, volume, chip::OPNB::Register::B);
+}
+
+void OPNBInterface::setADPCMASample(uint8_t channel, const ADPCMASampleAddr adpcmaSampleAddr)
+{
+    assert((adpcmaSampleAddr.start & 0xF000) == (adpcmaSampleAddr.end & 0xF000)); // asserts that the sample doesn't cross a 1mb page boundary
+
+    _opnb.setRegister(chip::OPNB::REG_PA_STARTL+channel, adpcmaSampleAddr.start & 0x00FF, chip::OPNB::Register::B);
+    _opnb.setRegister(chip::OPNB::REG_PA_STARTH+channel, adpcmaSampleAddr.start >> 8,     chip::OPNB::Register::B);
+    _opnb.setRegister(chip::OPNB::REG_PA_ENDL+channel,   adpcmaSampleAddr.end & 0x00FF,   chip::OPNB::Register::B);
+    _opnb.setRegister(chip::OPNB::REG_PA_ENDH+channel,   adpcmaSampleAddr.end >> 8,       chip::OPNB::Register::B);
+}
+
+std::vector<OPNBInterface::ADPCMASampleAddr> OPNBInterface::buildAndWriteADPCMARom(const std::vector<QByteArray>& data)
+{
+    // Driver limitation (could be fixed with banking?)
+    if (data.size() > 512) throw "Maximum number of samples possible is 512.";
+
+    const int PAGE_SIZE = 0x100000;
+    const int PAGE_NUMBER = 16;
+    const int PCM_ROM_SIZE = PAGE_SIZE*PAGE_NUMBER;
+
+    int currentMbPageOffset = 0;
+    uint currentMbPage = 0;
+    std::vector<OPNBInterface::ADPCMASampleAddr> adpcmaSampleAddrs;
+
+    for (uint i = 0; i < data.size(); ++i)
+    {
+        int sampleSize = data[i].size()-1;
+        assert(sampleSize <= PAGE_SIZE);
+
+        // Would adding the current sample cross a 1mb page boundary?
+        // if so, write it to the next page.
+        if (currentMbPageOffset + data[i].size() > PAGE_SIZE)
+        {
+            currentMbPage++;
+            currentMbPageOffset = 0;
+        }
+        if (currentMbPage >= 16) throw "PCM Rom overflow";
+
+        uint8_t* bufferDest = _pcmRomBuffer + currentMbPage*PAGE_SIZE + currentMbPageOffset;
+        std::copy_n(data[i].data(), sampleSize, bufferDest);
+        currentMbPageOffset += sampleSize;
+
+        uint sampleStartAddr = (currentMbPage*PAGE_SIZE + currentMbPageOffset) / 256;
+        adpcmaSampleAddrs.push_back({
+            .start = static_cast<uint16_t>(sampleStartAddr / 256),
+            .end   = static_cast<uint16_t>((sampleStartAddr + sampleSize) / 256)
+        });
+    }
+
+    size_t dataSize = currentMbPage*PAGE_SIZE + currentMbPageOffset;
+    _opnb.writeRomADPCM(PCM_ROM_SIZE, 0, dataSize, _pcmRomBuffer);
+
+    return adpcmaSampleAddrs;
 }
 
 /************************************************ FM ************************************************/
