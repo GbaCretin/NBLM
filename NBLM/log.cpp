@@ -11,6 +11,7 @@ void stdLog::debug(const char* format, ...)
     std::string nChar("\n");
 
     vprintf((prefix + formatStr + nChar).c_str(), argptr);
+    fflush(stdout);
     va_end(argptr);
 }
 
@@ -23,6 +24,8 @@ void stdLog::info(const char* format, ...)
     std::string nChar("\n");
 
     vprintf((prefix + formatStr + nChar).c_str(), argptr);
+    fflush(stdout);
+
     va_end(argptr);
 }
 
@@ -35,6 +38,8 @@ void stdLog::warning(const char* format, ...)
     std::string nChar("\n");
 
     vfprintf(stderr, (prefix + formatStr + nChar).c_str(), argptr);
+    fflush(stderr);
+
     va_end(argptr);
 }
 
@@ -47,6 +52,7 @@ void stdLog::critical(const char* format, ...)
     std::string nChar("\n");
 
     vfprintf(stderr, (prefix + formatStr + nChar).c_str(), argptr);
+    fflush(stderr);
     va_end(argptr);
 }
 
@@ -59,6 +65,7 @@ void stdLog::fatal(const char* format, ...)
     std::string nChar("\n");
 
     vfprintf(stderr, (prefix + formatStr + nChar).c_str(), argptr);
+    fflush(stderr);
     va_end(argptr);
     exit(1);
 }

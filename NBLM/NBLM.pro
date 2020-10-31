@@ -20,7 +20,7 @@ SOURCES += \
     chip/resampler.cpp \
     log.cpp \
     main.cpp \
-    nblm.cpp
+    mainwindow.cpp
 
 HEADERS += \
     OPNBInterface.hpp \
@@ -37,11 +37,11 @@ HEADERS += \
     chip/opnb.hpp \
     chip/resampler.hpp \
     log.hpp \
-    math.hpp \
-    nblm.hpp
+    mainwindow.hpp \
+    math.hpp
 
 FORMS += \
-    nblm.ui
+    mainwindow.ui
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin

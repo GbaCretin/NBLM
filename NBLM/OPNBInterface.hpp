@@ -54,6 +54,7 @@ public:
     OPNBInterface(int rate);
     ~OPNBInterface();
     void setDefaults();
+    void mix(size_t samples);
 
     void stopADPCMAChannel(uint8_t channel);
     void playADPCMAChannel(uint8_t channel);
