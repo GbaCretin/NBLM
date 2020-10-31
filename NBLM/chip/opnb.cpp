@@ -1,7 +1,6 @@
 #include "opnb.hpp"
 #include "chip/chip_misc.hpp"
 #include "math.hpp"
-#include <iostream>
 
 stream_sample_t* DUMMYBUF[] = { nullptr, nullptr };
 UINT8 CHIP_SAMPLING_MODE = 0x00;
@@ -60,9 +59,6 @@ namespace chip
         device_reset_ym2610(_chipID);
 
         chipCount++;
-
-        std::cout << "FM/ADPCM internal rate: " << _internalRate[ADSOURCE_FMADPCM] << std::endl;
-        std::cout << "SSG internal rate: " << _internalRate[ADSOURCE_SSG] << std::endl;
 
         for (int snd = 0; snd <= 1; ++snd)
         {

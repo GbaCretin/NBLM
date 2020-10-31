@@ -2,7 +2,8 @@ QT       += core gui
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
-CONFIG += c++1z
+CONFIG += \
+    c++1z
 
 # You can make your code fail to compile if it uses deprecated APIs.
 # In order to do so, uncomment the following line.
@@ -17,6 +18,7 @@ SOURCES += \
     chip/mame/ymdeltat.c \
     chip/opnb.cpp \
     chip/resampler.cpp \
+    log.cpp \
     main.cpp \
     nblm.cpp
 
@@ -34,6 +36,7 @@ HEADERS += \
     chip/mame/ymdeltat.h \
     chip/opnb.hpp \
     chip/resampler.hpp \
+    log.hpp \
     math.hpp \
     nblm.hpp
 

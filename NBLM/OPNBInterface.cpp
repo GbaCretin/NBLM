@@ -109,27 +109,32 @@ std::vector<OPNBInterface::ADPCMASampleAddr> OPNBInterface::buildAndWriteADPCMAR
 
     for (uint i = 0; i < data.size(); ++i)
     {
-        int sampleSize = data[i].size()-1;
+        int sampleSize = data[i].size();
         assert(sampleSize <= PAGE_SIZE);
 
-        // Would adding the current sample cross a 1mb page boundary?
-        // if so, write it to the next page.
+        // Would adding the current sample to the PCM Rom cross
+        // a 1mb page boundary? if so, write it to the next page.
         if (currentMbPageOffset + data[i].size() > PAGE_SIZE)
         {
             currentMbPage++;
             currentMbPageOffset = 0;
         }
-        if (currentMbPage >= 16) throw "PCM Rom overflow";
+        if (currentMbPage >= 16)
+        {
+            qCritical("PCM Rom overflow");
+            throw "PCM Rom overflow";
+        };
 
         uint8_t* bufferDest = _pcmRomBuffer + currentMbPage*PAGE_SIZE + currentMbPageOffset;
         std::copy_n(data[i].data(), sampleSize, bufferDest);
-        currentMbPageOffset += sampleSize;
 
-        uint sampleStartAddr = (currentMbPage*PAGE_SIZE + currentMbPageOffset) / 256;
+        uint sampleStartAddr = currentMbPage*PAGE_SIZE + currentMbPageOffset;
         adpcmaSampleAddrs.push_back({
             .start = static_cast<uint16_t>(sampleStartAddr / 256),
             .end   = static_cast<uint16_t>((sampleStartAddr + sampleSize) / 256)
         });
+
+        currentMbPageOffset += sampleSize + 1;
     }
 
     size_t dataSize = currentMbPage*PAGE_SIZE + currentMbPageOffset;
