@@ -7,7 +7,6 @@
 #include <QFile>
 #include "mainwindow.hpp"
 #include "ui_mainwindow.h"
-#include "OPNBInterface.hpp"
 #include "log.hpp"
 
 const char* PCMA_FILE_PATHS[] =
@@ -25,17 +24,18 @@ const char* PCMA_FILE_PATHS[] =
     "../samples/GRAND_PIANO_A#3.pcma",
     "../samples/GRAND_PIANO_B3.pcma"
 };
+const int SAMPLE_RATE = 44100;
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
-    , ui(new Ui::MainWindow)
+    , _ui(new Ui::MainWindow)
+    , _opnbInterface(SAMPLE_RATE)
 {
-    ui->setupUi(this);
+    _ui->setupUi(this);
+    const uint CHANNEL_COUNT = 2;
+    const size_t SAMPLE_COUNT = SAMPLE_RATE*1; // A second long stream
 
-    const int rate = 44100;
-    size_t samples = rate*1;
-    int16_t* stream = new int16_t[samples*2];
-    OPNBInterface opnbIntf(rate);
+    int16_t* stream = new int16_t[SAMPLE_COUNT*CHANNEL_COUNT];
     uint8_t adpcmaChannel = 5;
 
     // Open pcma files and write their contents into the file buffers
@@ -55,17 +55,17 @@ MainWindow::MainWindow(QWidget *parent)
     }
 
     std::vector<OPNBInterface::ADPCMASampleAddr> adpcmaSampleAddrs =
-            opnbIntf.buildAndWriteADPCMARom(pcmaFileBuffers);
+            _opnbInterface.buildAndWriteADPCMARom(pcmaFileBuffers);
     stdLog::debug("Built PCM Rom");
 
-    opnbIntf.setADPCMAMasterVolume(63);
-    opnbIntf.setADPCMAChannelVolume(adpcmaChannel, 31);
-    opnbIntf.setADPCMAPanning(adpcmaChannel, audioDef::Panning::CENTER);
-    opnbIntf.setADPCMASample(adpcmaChannel, adpcmaSampleAddrs[0]);
-    opnbIntf.playADPCMAChannel(adpcmaChannel);
+    _opnbInterface.setADPCMAMasterVolume(63);
+    _opnbInterface.setADPCMAChannelVolume(adpcmaChannel, 31);
+    _opnbInterface.setADPCMAPanning(adpcmaChannel, audioDef::Panning::CENTER);
+    _opnbInterface.setADPCMASample(adpcmaChannel, adpcmaSampleAddrs[0]);
+    _opnbInterface.playADPCMAChannel(adpcmaChannel);
     stdLog::debug("Set OPNB Registers");
 
-    opnbIntf.mix(stream, samples);
+    _opnbInterface.mix(stream, SAMPLE_COUNT);
     stdLog::debug("Mixed OPNB stream");
 
     // save stream to file
@@ -73,7 +73,7 @@ MainWindow::MainWindow(QWidget *parent)
     outputFile.open("stream.raw", std::ios::binary | std::ios::out);
 
     char tmp[2];
-    for (size_t i = 0; i < samples*2; ++i)
+    for (size_t i = 0; i < SAMPLE_COUNT*CHANNEL_COUNT; ++i)
     {
       tmp[0] = stream[i] & 0xFF;
       tmp[1] = (stream[i] >> 8) & 0xFF;
@@ -90,5 +90,10 @@ MainWindow::MainWindow(QWidget *parent)
 
 MainWindow::~MainWindow()
 {
-    delete ui;
+    delete _ui;
+}
+
+void MainWindow::on_pushButton_clicked()
+{
+    stdLog::info("Push Button Clicked!");
 }
