@@ -8,4 +8,3 @@ Without them I would have never been able to write the backend of NBLM!
 ## TODO
 
 ## Bugs
-* Every sample from sample 2 and on is distorted.
