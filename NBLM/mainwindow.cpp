@@ -32,11 +32,7 @@ MainWindow::MainWindow(QWidget *parent)
     , _opnbInterface(SAMPLE_RATE)
 {
     _ui->setupUi(this);
-    const uint CHANNEL_COUNT = 2;
-    const size_t SAMPLE_COUNT = SAMPLE_RATE*1; // A second long stream
-
-    int16_t* stream = new int16_t[SAMPLE_COUNT*CHANNEL_COUNT];
-    uint8_t adpcmaChannel = 5;
+    const uint8_t adpcmaChannel = 5;
 
     // Open pcma files and write their contents into the file buffers
     std::vector<QByteArray> pcmaFileBuffers;
@@ -62,30 +58,6 @@ MainWindow::MainWindow(QWidget *parent)
     _opnbInterface.setADPCMAChannelVolume(adpcmaChannel, 31);
     _opnbInterface.setADPCMAPanning(adpcmaChannel, audioDef::Panning::CENTER);
     _opnbInterface.setADPCMASample(adpcmaChannel, adpcmaSampleAddrs[0]);
-    _opnbInterface.playADPCMAChannel(adpcmaChannel);
-    stdLog::debug("Set OPNB Registers");
-
-    _opnbInterface.mix(stream, SAMPLE_COUNT);
-    stdLog::debug("Mixed OPNB stream");
-
-    // save stream to file
-    std::ofstream outputFile;
-    outputFile.open("stream.raw", std::ios::binary | std::ios::out);
-
-    char tmp[2];
-    for (size_t i = 0; i < SAMPLE_COUNT*CHANNEL_COUNT; ++i)
-    {
-      tmp[0] = stream[i] & 0xFF;
-      tmp[1] = (stream[i] >> 8) & 0xFF;
-
-      outputFile.write(tmp, 2);
-    }
-
-    outputFile.close();
-    stdLog::debug("Saved OPNB stream");
-
-    delete[] stream;
-    stdLog::debug("Freed used memory");
 }
 
 MainWindow::~MainWindow()
@@ -95,5 +67,20 @@ MainWindow::~MainWindow()
 
 void MainWindow::on_pushButton_clicked()
 {
-    stdLog::info("Push Button Clicked!");
+    const uint CHANNEL_COUNT = 2;
+    const size_t SAMPLE_COUNT = SAMPLE_RATE*1; // A second long stream
+    const uint8_t adpcmaChannel = 5;
+
+    int16_t* stream = new int16_t[SAMPLE_COUNT*CHANNEL_COUNT];
+
+    _opnbInterface.playADPCMAChannel(adpcmaChannel);
+    stdLog::debug("Set OPNB Registers");
+
+    _opnbInterface.mix(stream, SAMPLE_COUNT);
+    stdLog::debug("Mixed OPNB stream");
+
+    stdLog::debug("Started playing OPNB stream");
+
+    delete[] stream;
+    stdLog::debug("Freed memory");
 }
